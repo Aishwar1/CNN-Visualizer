@@ -71,23 +71,19 @@ flowchart TD
 cnn-feature-visualization/
 │
 ├── models/
-│   ├── vgg16.py
-│   ├── vgg19.py
-│   ├── resnet.py
-│   └── inception.py
+│   ├── vgg16
+│   ├── vgg19
+│   ├── resnet50
+│   └── inceptionV3
 │
-├── visualization/
-│   ├── feature_maps.py
-│   ├── weights_analysis.py
-│   └── tensorboard_logs/
+├── static/
+|   └── script.js
 │
-├── data/
-│   └── sample_images/
+├── templates/
+│   └── index.html
+├── app.py
 │
-├── metrics/
-│   └── evaluation_results.json
-│
-├── main.py
+├── model_utils.py
 └── README.md
 ```
 
@@ -96,8 +92,10 @@ cnn-feature-visualization/
 ## ▶️ How to Run
 
 ```bash
-pip install tensorflow matplotlib numpy
-python main.py
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
 ```
 
 ---
