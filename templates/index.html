@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+/* ===== IMAGE CLICK ZOOM (IN-PLACE) ===== */
+.feature-grid img,
+.compare-grid img {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: zoom-in;
+    position: relative;
+    z-index: 1;
+}
+
+.feature-grid img.zoomed,
+.compare-grid img.zoomed {
+    transform: scale(1.8);          /* 👈 adjust if needed (1.5–2) */
+    z-index: 20;
+    box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    cursor: zoom-out;
+}
+
+/* ========== GLOBAL RESET ========== */
+* {
+    box-sizing: border-box;
+}
+
+/* FIX 1: viewport height context */
+html, body {
+    height: 100%; /* FIX */
+}
+
+body {
+    background: #0e0e0e;
+    color: #eaeaea;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 8px;
+}
+
+/* FIX 2: flex container required */
+.outer-container {
+    background: #121212;
+    border-color: #333;
+    display: flex;              /* FIX */
+    flex-direction: column;
+    height: calc(100vh - 16px);               /* FIX */
+    max-height: calc(100vh - 16px);        /* FIX */
+    overflow: hidden;
+}
+
+.control-box,
+.left-panel,
+.center-panel,
+.right-panel,
+.center-box,
+.metric-box,
+.arch-box,
+select,
+input,
+button {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+}
+
+button:hover {
+    background: #333;
+}
+
+/* ========== TITLE ========== */
+.title-box {
+    border: 2px solid black;
+    background: #222;
+    text-align: center;
+    font-weight: bold;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+/* ========== TOP CONTROLS ========== */
+.top-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 0px;
+    margin-bottom: 12px;
+}
+
+.control-box {
+    border: 2px solid black;
+    padding: 6px;
+    text-align: center;
+}
+
+#runBtn {
+    border: 2px solid black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ========== MAIN GRID ========== */
+.main-body {
+    flex: 1;
+    height: 100%;               /* FIX */
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 50% 33% 15%;
+    gap: 12px;
+    overflow: hidden;
+}
+
+/* ================= LEFT PANEL ================= */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.feature-grid {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    overflow-y: auto;          /* INTERNAL SCROLL */
+    overflow-x: hidden;
+}
+
+.feature-grid img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border: 2px solid black;
+    background: #111;
+    border-color: #333;
+}
+
+/* ================= CENTER PANEL ================= */
+.center-panel {
+    /* border: 1px solid #333; */
+    display: grid;
+    grid-template-rows:
+        240px   /* Layer Comparison (images) */
+        165px   /* Histogram */
+        28px    /* Metric row */
+        auto;  /* Confusion matrix */
+    gap: 5px;
+    height: 100%;
+    min-height: 0;
+}
+
+
+/* ===== CENTER BOTTOM : COMPARISON ===== */
+.center-comparison {
+    border: 2px solid black;
+    padding: 8px;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.center-comparison h4 {
+    margin: 0 0 6px 0;
+}
+
+.center-comparison .comparison-content {
+    flex: 1;
+    border: 1px dashed #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #666;
+}
+
+/* ---- Histogram ---- */
+.center-box {
+    border: 2px solid black;
+    padding: 6px;
+    height: 180px;          /* 🔴 REQUIRED */
+    min-height: 180px;      /* 🔴 REQUIRED */
+    max-height: 180px;      /* 🔴 REQUIRED */
+    overflow: hidden;
+}
+
+.center-box canvas {
+    flex: 1;                  /* NEW */
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ---- Metrics ---- */
+.metric-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    height: 22px;
+    align-items: center;
+}
+
+.metric-box {
+    border: 2px solid black;
+    font-size: 11px;
+    padding: 4px;
+    text-align: center;
+}
+
+/* ---- Confusion Matrix ---- */
+.cm-box {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;                 /* NEW */
+    min-height: 0;           /* NEW */
+}
+
+#cmImage {
+    padding: 0px;
+    width: 100%;
+    height: 100%;            /* NEW */
+    max-height: none;        /* REMOVE LIMIT */
+    object-fit: contain;
+    cursor: zoom-in;         /* NEW */
+}
+
+/* ================= RIGHT PANEL ================= */
+.right-wrapper {
+    display: grid;
+    grid-template-rows: 100%;
+    gap: 5px;
+    height: 100%;
+    min-height: 0;
+}
+
+/* ================= ARCHITECTURE ================= */
+.right-architecture {
+    border: 1px solid #333;
+    background: #222;
+    padding: 6px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+}
+
+#architectureBox {
+    background: #222;
+    min-height: 0;
+    height: 100%;              /* NEW */
+    overflow-y: auto;
+    overflow-x: auto;
+
+    white-space: pre;
+    font-family: monospace;
+    font-size: 15.5px;
+    line-height: 1.3;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#architectureBox::-webkit-scrollbar {
+    display: none;
+}
+
+/* ========== COMPARE GRID ========== */
+.compare-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    max-height: 100%;
+    padding-right: 4px;
+}
+
+.compare-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    max-height: 100%;
+    padding-right: 4px;
+}
+
+/* ========== ZOOM MODAL ========== */
+.zoom-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+/* FORCE BIG IMAGE IN MODAL */
+.zoom-modal img {
+    width: 500px !important;
+    height: 500px !important;
+    max-width: 92vw;
+    max-height: 92vh;
+    object-fit: contain;
+}
+
+.zoom-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 42px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="zoomModal" class="zoom-modal">
+    <span class="zoom-close">&times;</span>
+    <img id="zoomImg">
+</div>
+
+<div class="outer-container">
+
+<div class="title-box">CNN Visualization</div>
+
+<div class="top-controls">
+    <div class="control-box">
+        <strong>Input Image</strong><br>
+        <input type="file" id="imageUpload" accept="image/*">
+        <strong>Model :</strong>
+        <select id="modelSelect">
+            <option value="resnet50">ResNet50</option>
+            <option value="vgg16">VGG16</option>
+        </select>
+    </div>
+
+    <div class="control-box">
+        <strong>Features</strong><br>
+        <input type="number" id="featureCount" value="16">
+        <button id="downloadBtn">Download Feature Maps</button>
+    </div>
+
+    <div class="control-box">
+        <strong>Layer</strong><br>
+        <select id="layerSelect"></select>
+    </div>
+    
+    <button id="runBtn">Run Visualization</button>
+    
+</div>
+
+<div class="main-body">
+
+<div class="left-panel">
+    <div id="featureGrid" class="feature-grid"></div>
+</div>
+
+<div class="center-panel">
+    <div class="center-comparison">
+        <h4>Layer Comparison</h4>
+
+        <select id="compareLayerSelect"></select>
+        <button id="compareBtn">Compare Layers</button>
+
+        <div id="compareGrid" class="compare-grid"></div>
+    </div>
+
+    <div class="center-box">
+        <strong>Compare Metric :</strong>
+        <select id="compareMetric">
+            <option value="accuracy">Accuracy</option>
+            <option value="precision">Precision</option>
+            <option value="recall">Recall</option>
+            <option value="f1">F1</option>
+        </select>
+        <canvas id="comparisonChart"></canvas>
+    </div>
+
+    <div class="metric-row">
+        <div class="metric-box" id="accBox">Accuracy</div>
+        <div class="metric-box" id="precBox">Precision</div>
+        <div class="metric-box" id="recBox">Recall</div>
+        <div class="metric-box" id="f1Box">F1</div>
+    </div>
+
+    <div class="cm-box">
+        <img id="cmImage">
+    </div>
+</div>
+
+<div class="right-wrapper">
+    <div class="right-architecture">
+        <h4>Model Architecture</h4>
+        <div id="architectureBox">Loading...</div>
+    </div>
+</div>
+
+</div>
+</div>
+
+<script src="/static/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
