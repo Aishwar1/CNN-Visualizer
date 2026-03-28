@@ -5,6 +5,9 @@ This project focuses on understanding **what CNNs learn internally** by visualiz
 
 <img width="2879" height="1798" alt="image" src="https://github.com/user-attachments/assets/670494ab-4d2d-4ef9-b744-2ea4e7cc8137" />
 
+<img width="2879" height="1799" alt="image" src="https://github.com/user-attachments/assets/e83ae639-dacf-4d15-af59-805d9820b920" />
+
+<img width="2879" height="1799" alt="image" src="https://github.com/user-attachments/assets/ca78347b-fd9c-41a7-b592-25ba6e7a2b5e" />
 
 
 
