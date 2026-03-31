@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 
 from model_utils import (
-    load_model_by_name,
+    load_model,
     load_and_preprocess_image,
     extract_feature_maps,
     save_feature_maps,
