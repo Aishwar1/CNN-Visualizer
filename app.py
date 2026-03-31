@@ -27,7 +27,7 @@ def analyze():
     num_features = int(data["num_features"])
     img_path = data["image_path"]
 
-    model, preprocess_fn = load_model_by_name(model_name)
+    model, preprocess_fn = load_model(model_name)
     img_array = load_and_preprocess_image(img_path, preprocess_fn)
 
     feature_maps = extract_feature_maps(model, img_array, layer_name)
@@ -51,7 +51,7 @@ def analyze():
 @app.route("/layers")
 def layers():
     model_name = request.args.get("model", "resnet50")
-    model, _ = load_model_by_name(model_name)
+    model, _ = load_model(model_name)
 
     return jsonify([
         l.name for l in model.layers if len(l.output_shape) == 4
@@ -61,7 +61,7 @@ def layers():
 @app.route("/architecture")
 def architecture():
     model_name = request.args.get("model", "resnet50")
-    model, _ = load_model_by_name(model_name)
+    model, _ = load_model(model_name)
 
     lines = []
     for layer in model.layers:
